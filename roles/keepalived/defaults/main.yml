@@ -1,0 +1,20 @@
+---
+service_name:   router
+
+virt_state:     "BACKUP"
+virt_priority:  "100"
+
+net_in: [
+  '# {{ service_name }}',
+  '# vrrp (112), ah (51)',
+  '-A INPUT -i {{ dev_WAN }} -p vrrp -d 224.0.0.18 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A INPUT -i {{ dev_WAN }} -p ah -d 224.0.0.18 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_out: [
+  '# {{ service_name }}',
+  '# vrrp (112), ah (51)',
+  '-A OUTPUT -o {{ dev_WAN }} -p vrrp -d 224.0.0.18 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A OUTPUT -o {{ dev_WAN }} -p ah -d 224.0.0.18 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_forward: []
+net_nat: []

@@ -1,0 +1,8 @@
+
+-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+# DNS
+-A OUTPUT -o {{ dev_WAN }} -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
+# HTTP/HTTPS traffic to download OS updates
+-A OUTPUT -o {{ dev_WAN }} -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW -j ACCEPT
+# NTP
+-A OUTPUT -o {{ dev_WAN }} -p udp -m udp --dport 123 -m conntrack --ctstate NEW -j ACCEPT

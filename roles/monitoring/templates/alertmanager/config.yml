@@ -1,0 +1,14 @@
+route:
+  group_by: [Alertname]
+  # Send all notifications to me.
+  receiver: email-me
+
+receivers:
+- name: email-me
+  email_configs:
+  - to: {{ GMAIL_USER }}
+    from: {{ GMAIL_USER }}
+    smarthost: smtp.gmail.com:587
+    auth_username: "{{ GMAIL_USER }}"
+    auth_identity: "{{ GMAIL_USER }}"
+    auth_password: "{{ GMAIL_PASS }}"

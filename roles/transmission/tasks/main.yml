@@ -1,0 +1,74 @@
+---
+- name: transmission  |  Create destiny
+  file:
+    path: /opt/transmission
+    state: directory
+    mode: '0750'
+  tags: install
+
+- name: transmission  |  Copy docker-compose
+  template: 
+    src: docker-compose.yml
+    dest: /opt/transmission/
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: transmission  |  Tear down existing services
+  docker_compose:
+    project_src: /opt/transmission
+    #remove_images: yes
+    remove_volumes: yes
+    state: absent
+  tags: uninstall, never
+    
+- name: transmission  |  Create and start services
+  docker_compose:
+    project_src: /opt/transmission
+  when: newdocker.changed
+  tags: install
+
+- name: transmission  |  Copy proxy config
+  include_role:
+    name: proxy-http
+  vars:
+    network_name: "{{ net_name }}"
+    virtualhosts: "{{ services }}"
+  tags: install
+
+- name: transmission  |  Get network info
+  community.general.docker_network_info:
+    name: "{{ service_name }}_{{ net_name }}"
+  register: docker_net
+  tags: install
+
+- name: transmission  |  Get network name
+  set_fact:
+    eth_hash: "{{ docker_net.network.Id[:12] }}"
+  tags: install
+
+- name: transmission  |  Get container info
+  docker_container_info:
+    name: transmission_transmission_1
+  register: result
+  tags: install
+
+- name: transmission  |  Apply iptables rules
+  include_role:
+    name: firewall
+  vars:
+    container_ip: "{{ item.IPAddress }}"
+  with_items: "{{ result | json_query('container.NetworkSettings.Networks.[*]') }}"
+  tags: install
+
+- name: transmission  |  Add DNS to Pi-hole
+  lineinfile:
+    path: /opt/pihole/etc-pihole/custom.list
+    state: present
+    regexp: '^{{ ip_VPN }} {{ item }}.{{ name_VPN }}.vpn'
+    line: '{{ ip_VPN }} {{ item }}.{{ name_VPN }}.vpn'
+  loop:
+    - transmission
+  tags: install

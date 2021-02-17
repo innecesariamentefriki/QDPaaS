@@ -1,0 +1,12 @@
+---
+- name: Display ovpn PC contents
+  command: cat {{ item }}-PC.ovpn chdir=/tmp
+  register: command_output
+
+- debug: msg="{{command_output.stdout}}"
+
+- name: Display ovpn SMARTPHONE contents
+  command: cat {{ item }}-SMARTPHONE.ovpn chdir=/tmp
+  register: command_output
+
+- debug: msg="{{command_output.stdout}}"

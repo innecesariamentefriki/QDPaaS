@@ -1,0 +1,38 @@
+---
+service_name:   router
+
+dev_WAN:        "eth0"
+
+ip_WAN:         "10.0.2.15"
+mask_WAN:       "255.255.255.0"
+net_WAN:        "10.0.2.0"
+gw_WAN:         "10.0.2.2"
+
+dev_LAN:        "eth1"
+dev_WLAN:       "wlan0"
+
+dev_BRIDGE:     "br0"
+ip_BRIDGE:      "10.0.42.1"
+mask_BRIDGE:    "255.255.255.0"
+net_BRIDGE:     "10.0.42.0"
+
+dns1:           "8.8.8.8"
+dns2:           "8.8.4.4"
+
+ip_dhcp_first:  "10.0.42.100"
+ip_dhcp_last:   "10.0.42.200"
+
+net_in: [
+  '# {{ service_name }}',
+  '# dhcp server gives ip to clients',
+  '-A UDP -i {{ dev_BRIDGE }} -p udp -m udp --dport 67 -m conntrack --ctstate NEW -j ACCEPT',
+  '# proxy-http gives access to docker services',
+  '-A TCP -i {{ dev_VPN }} -p tcp -m tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_out: [
+  '# {{ service_name }}',
+  '# ssh from router to hosts on lan',
+  '-A OUTPUT -o {{ dev_BRIDGE }} -p tcp -m tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_forward: []
+net_nat: []

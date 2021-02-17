@@ -1,0 +1,10 @@
+---
+
+- name: Loop backup for each volume
+  include: backup.yml
+  when: action == "backup"
+
+- name: Loop restore for each volume
+  include_tasks: restore.yml
+  when: action == "restore"
+  

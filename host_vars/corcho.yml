@@ -1,0 +1,51 @@
+---
+ansible_python_interpreter: /usr/bin/python3
+
+#############################
+### Network configuration ###
+#############################
+
+# The IP of the computer running Vagrant or the server you're going to run the playbook to
+ip_VPN_server:  "10.0.33.9"
+
+# The virtual IP where the VPN will (also) listen to. Services deployed outside the VPN will use this IP
+virt_ip:        "10.0.33.123"
+
+# When not running Vagrant, this must be adapted to your setup
+dev_WAN:        "eth0"                          # si no, se queja vpn-server
+#ip_WAN:         "10.0.2.15"
+#mask_WAN:       "255.255.255.0"
+#net_WAN:        "10.0.2.0"
+#gw_WAN:         "10.0.2.2"
+dev_LAN:        "eth1"                          # si no, se queja router
+
+dev_VPN:        "tun0"                          # si no, se queja vpn-server
+ip_VPN:         "10.8.1.1"                      # si no, se queja keepalived
+name_VPN:       "QDPaaS"
+
+dev_BRIDGE:     "br0"                           # si no, se queja proxy-http
+
+#############################
+###       Accounts        ###
+#############################
+
+# this account is used for:
+# - openvpn CA
+# - send monitoring alerts
+GMAIL_USER:     "user@gmail.com"
+GMAIL_PASS:     "pass"
+
+# Each device with vpn account
+vpn_clients:    [ 'laptop', 'android']
+
+backup_volumes:
+- emby_config
+- monitoring_alertmanager_data
+- monitoring_grafana_data
+- monitoring_prometheus_data
+- nextcloud_apps
+- nextcloud_config
+- nextcloud_data
+- nextcloud_db
+- nextcloud_nextcloud
+- transmission_config

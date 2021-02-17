@@ -1,0 +1,6 @@
+service_name: node_exporter
+
+net_in: []
+net_out: []
+net_forward: []
+net_nat: []

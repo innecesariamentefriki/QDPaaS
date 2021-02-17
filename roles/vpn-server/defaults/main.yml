@@ -1,0 +1,64 @@
+service_name:   openvpn
+
+dev_VPN:        "tun0"
+ip_VPN:         "10.8.1.1"
+mask_VPN:       "255.255.255.0"
+net_VPN:        "10.8.1.0"
+VPN_port:       "1194"
+ip_VPN_min:     "10.8.1.2"
+ip_VPN_max:     "10.8.1.10"
+name_VPN:       "QDPaaS"
+
+easy_rsa_dir:                   "/usr/share/easy-rsa"
+
+restore_backup: False
+
+net_in: [
+  '# {{ service_name }}',
+  '# accept vpn connections from everywhere',
+  '-A UDP -p udp -m udp --dport 3342 -m conntrack --ctstate NEW -j ACCEPT',
+  '# vpn clients querying pihole',
+  '-A UDP -i {{ dev_VPN }} -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_out: [
+  '# {{ service_name }}',
+  '# host needs dns and https traffic',
+  '-A OUTPUT -o {{ dev_WAN }} -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A OUTPUT -o {{ dev_WAN }} -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW -j ACCEPT',
+  '# moonlight clients',
+  '-A OUTPUT -o {{ dev_LAN }} -p tcp -m tcp -m multiport --dports 47984,47989,48010 -j ACCEPT',
+  '-A OUTPUT -o {{ dev_LAN }} -p udp -m udp -m multiport --dports 47998,47999,48000,48010 -j ACCEPT',
+  '# just when host is Ubuntu',
+  '-A OUTPUT -o lo -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_forward: [
+  '# {{ service_name }}',
+  '# vpn clients surfing internet',
+  '-A FORWARD -i {{ dev_VPN }} -o {{ dev_WAN }} -p tcp -m multiport --dports 22,80,443,8080,8081,8443 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i {{ dev_VPN }} -o {{ dev_WAN }} -p tcp -m tcp --dport 123 -m conntrack --ctstate NEW -j ACCEPT',
+  '# moonlight clients',
+  '-A FORWARD -i {{ dev_VPN }} -o {{ dev_LAN }} -p tcp -m tcp -m multiport --dports 47984,47989,48010 -j ACCEPT',
+  '-A FORWARD -i {{ dev_VPN }} -o {{ dev_LAN }} -p udp -m udp -m multiport --dports 47998,47999,48000,48010 -j ACCEPT',
+  '#-A FORWARD -i {{ dev_VPN }} -o {{ dev_WAN }} -p tcp -m tcp -m multiport --dports 47984,47989,48010 -j ACCEPT',
+  '#-A FORWARD -i {{ dev_VPN }} -o {{ dev_WAN }} -p udp -m udp -m multiport --dports 47998,47999,48000,48010 -j ACCEPT',
+  '# vpn clients can access all lan',
+  '-A FORWARD -i tun0 -o br0 -p tcp -m tcp -s 10.8.1.0/24 -d 10.0.42.168 -j ACCEPT',
+  '# vnc osx',
+  '#-A FORWARD -i tun0 -o enp3s0 -p tcp -m tcp -s 10.8.1.0/24 -d 192.168.123.242 -j ACCEPT',
+  '# nxmachine',
+  '#-A FORWARD -i tun0 -o br0 -p tcp -m tcp -s 10.8.1.0/24 -d 10.0.42.173 -j ACCEPT',
+  '# discord',
+  '-A FORWARD -i tun0 -o enp3s0 -p udp -m multiport --dports 50001,50002,50003,50004,50008 -m conntrack --ctstate NEW -j ACCEPT',
+  '# obs',
+  '-A FORWARD -i tun0 -o enp3s0 -p tcp -m tcp --dport 1935 -m conntrack --ctstate NEW -j ACCEPT',
+  '# zoom',
+  '-A FORWARD -i tun0 -o enp3s0 -p tcp -m tcp --dport 9090 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i tun0 -o enp3s0 -p udp -m multiport --dports 3478,3479,8801 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i tun0 -o enp3s0 -p tcp -m multiport --dports 8801,8802,443 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i tun0 -o enp3s0 -p tcp -m tcp --dport 8888 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i tun0 -o enp3s0 -p udp -m udp --dport 8889 -m conntrack --ctstate NEW -j ACCEPT',
+  '# meet',
+  '-A FORWARD -i tun0 -o enp3s0 -p tcp -m tcp --dport 587 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i tun0 -o enp3s0 -p udp -m udp --dport 19305 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_nat: []

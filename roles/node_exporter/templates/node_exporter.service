@@ -1,0 +1,12 @@
+[Unit]
+Description=Node Exporter
+Requires=sys-devices-virtual-net-{{ dev_VPN }}.device
+After=sys-devices-virtual-net-{{ dev_VPN }}.device
+
+[Service]
+User=prometheus
+ExecStart=/usr/local/bin/node_exporter-0.18.1.linux-amd64/node_exporter \
+            --web.listen-address={{ ip_VPN }}:9100
+
+[Install]
+WantedBy=multi-user.target

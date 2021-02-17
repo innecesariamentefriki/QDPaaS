@@ -1,0 +1,19 @@
+set_var EASYRSA                 "$PWD"
+set_var EASYRSA_PKI             "$EASYRSA/pki"
+set_var EASYRSA_DN              "cn_only"
+set_var EASYRSA_REQ_COUNTRY     "{{ EASYRSA_REQ_COUNTRY }}"
+set_var EASYRSA_REQ_PROVINCE    "{{ EASYRSA_REQ_PROVINCE }}"
+set_var EASYRSA_REQ_CITY        "{{ EASYRSA_REQ_CITY }}"
+set_var EASYRSA_REQ_ORG         "{{ EASYRSA_REQ_ORG }}"
+set_var EASYRSA_REQ_EMAIL       "{{ EASYRSA_REQ_EMAIL }}"
+set_var EASYRSA_REQ_OU          "{{ EASYRSA_REQ_OU }}"
+set_var EASYRSA_KEY_SIZE        2048
+set_var EASYRSA_ALGO            rsa
+set_var EASYRSA_CA_EXPIRE       7500
+set_var EASYRSA_CERT_EXPIRE     365
+set_var EASYRSA_NS_SUPPORT      "no"
+set_var EASYRSA_NS_COMMENT      "{{ EASYRSA_NS_COMMENT }}"
+set_var EASYRSA_EXT_DIR         "$EASYRSA/x509-types"
+set_var EASYRSA_SSL_CONF        "$EASYRSA/openssl-easyrsa.cnf"
+set_var EASYRSA_DIGEST          "sha256"
+set_var EASYRSA_BATCH           "true"

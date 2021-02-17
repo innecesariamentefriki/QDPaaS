@@ -1,0 +1,61 @@
+---
+- name: pihole  |  Create destiny
+  file:
+    path: /opt/pihole
+    state: directory
+    mode: '0750'
+  tags: install
+
+- name: pihole  |  Copy docker-compose
+  template: 
+    src: docker-compose.yml
+    dest: /opt/pihole/
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: pihole  |  Tear down existing services
+  docker_compose:
+    project_src: /opt/pihole
+    #remove_images: yes
+    remove_volumes: yes
+    state: absent
+  tags: uninstall, never
+    
+- name: pihole  |  Create and start services
+  docker_compose:
+    project_src: /opt/pihole
+  when: newdocker.changed
+  tags: install
+
+- name: pihole  |  Get docker network name 1/2
+  community.general.docker_network_info:
+    name: "{{ service_name }}_{{ net_name }}"
+  register: docker_net
+  tags: install
+
+- name: pihole  |  Get docker network name 2/2
+  set_fact:
+    eth_hash: "{{ docker_net.network.Id[:12] }}"
+  tags: install
+
+- name: pihole  |  Apply iptables rules
+  include_role:
+    name: firewall
+  tags: install
+
+- name: pihole  |  Create custom DNS file
+  file:
+    path: /opt/pihole/etc-pihole/custom.list
+    state: touch
+  tags: install
+
+- name: pihole  |  Add DNS to Pi-hole
+  lineinfile:
+    path: /opt/pihole/etc-pihole/custom.list
+    state: present
+    regexp: '^{{ ip_VPN }} {{ name_VPN }}.vpn'
+    line: '{{ ip_VPN }} {{ name_VPN }}.vpn'
+  tags: install

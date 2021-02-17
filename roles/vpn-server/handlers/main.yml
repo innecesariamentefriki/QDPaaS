@@ -1,0 +1,3 @@
+---
+- name: restart openvpn@{{ name_VPN }}
+  service: name=openvpn@{{ name_VPN }} state=restarted enabled=yes daemon_reload=yes

@@ -1,0 +1,28 @@
+---
+- name: vpn  |  Create HMAC key
+  shell: "openvpn --genkey --secret {{ easy_rsa_dir }}/keys/ta.key 2> /dev/null"
+  args:
+    creates: "{{ easy_rsa_dir }}/keys/ta.key"
+
+- name: vpn  |  Set proper permissions
+  file:
+    path: "{{ easy_rsa_dir }}/keys/ta.key"
+    owner: root
+    group: root
+    mode: 0400
+
+- name: vpn  |  Copy certificates
+  copy:
+    remote_src: yes
+    src: "{{ easy_rsa_dir }}/keys/{{ item }}"
+    dest: "/etc/openvpn/server"
+    owner: root
+    group: root
+    mode: 0400
+  with_items:
+    - "ca.crt"
+    - "{{ name_VPN }}.crt"
+    - "{{ name_VPN }}.key"
+    - "crl.pem"
+    - "ta.key"
+    - "dh2048.pem"

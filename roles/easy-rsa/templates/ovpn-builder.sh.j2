@@ -1,0 +1,92 @@
+#!/bin/bash
+# Creates .ovpn file
+CLIENT="$1"
+
+if [[ ! -z $1 ]]; then
+
+    OVPN="/tmp/${CLIENT}-PC.ovpn"
+    cat PC.cfg > $OVPN
+
+    if [ -d "/usr/share/easy-rsa/pki" ]; then
+
+        echo "<tls-auth>" >> $OVPN
+        cat /etc/openvpn/server/ta.key >> $OVPN
+        echo "</tls-auth>" >> $OVPN
+        echo "<key>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/private/$CLIENT.key >> $OVPN
+        echo "</key>" >> $OVPN
+        echo "<cert>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/issued/$CLIENT.crt >> $OVPN
+        echo "</cert>" >> $OVPN
+        echo "<ca>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/ca.crt >> $OVPN
+        echo "</ca>" >> $OVPN
+
+    elif [ -d "/usr/share/easy-rsa/keys" ]; then
+
+        echo "<tls-auth>" >> $OVPN
+        cat /etc/openvpn/server/ta.key >> $OVPN
+        echo "</tls-auth>" >> $OVPN
+        echo "<key>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/$CLIENT.key >> $OVPN
+        echo "</key>" >> $OVPN
+        echo "<cert>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/$CLIENT.crt >> $OVPN
+        echo "</cert>" >> $OVPN
+        echo "<ca>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/ca.crt >> $OVPN
+        echo "</ca>" >> $OVPN
+    
+    else
+
+        echo "No PKI found"
+
+    fi
+
+
+
+    OVPN="/tmp/$CLIENT-SMARTPHONE.ovpn"
+    cat SMARTPHONE.cfg > $OVPN
+
+    if [ -d "/usr/share/easy-rsa/pki" ]; then
+
+        echo "<tls-auth>" >> $OVPN
+        cat /etc/openvpn/server/ta.key >> $OVPN
+        echo "</tls-auth>" >> $OVPN
+        echo "<key>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/private/$CLIENT.key >> $OVPN
+        echo "</key>" >> $OVPN
+        echo "<cert>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/issued/$CLIENT.crt >> $OVPN
+        echo "</cert>" >> $OVPN
+        echo "<ca>" >> $OVPN
+        cat /usr/share/easy-rsa/pki/ca.crt >> $OVPN
+        echo "</ca>" >> $OVPN
+
+    elif [ -d "/usr/share/easy-rsa/keys" ]; then
+
+        echo "<tls-auth>" >> $OVPN
+        cat /etc/openvpn/server/ta.key >> $OVPN
+        echo "</tls-auth>" >> $OVPN
+        echo "<key>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/$CLIENT.key >> $OVPN
+        echo "</key>" >> $OVPN
+        echo "<cert>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/$CLIENT.crt >> $OVPN
+        echo "</cert>" >> $OVPN
+        echo "<ca>" >> $OVPN
+        cat /usr/share/easy-rsa/keys/ca.crt >> $OVPN
+        echo "</ca>" >> $OVPN
+    
+    else
+
+        echo "No PKI found"
+
+    fi
+
+else
+
+    echo "Wrong parameters. Usage:"
+    echo "./ovpn-builder.sh device-name"
+
+fi

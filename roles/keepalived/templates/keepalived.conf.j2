@@ -1,0 +1,23 @@
+! Configuration File for keepalived
+
+vrrp_instance VIP_WEB{
+	interface {{ dev_WAN }}
+	state {{ virt_state }}
+	virtual_router_id 42
+	priority {{ virt_priority }}
+
+	authentication {
+		auth_type PASS
+		auth_pass WEB_PASS
+	}
+
+	virtual_ipaddress {
+		{{ virt_ip }}/24
+	}
+
+	notify_master "/bin/systemctl start haproxy"
+	notify_backup "/bin/systemctl stop haproxy"
+	notify_fault  "/bin/systemctl stop haproxy"
+	notify_stop   "/bin/systemctl stop haproxy"
+
+}

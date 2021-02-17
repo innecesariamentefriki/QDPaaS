@@ -1,0 +1,40 @@
+---
+- name: Create backup path
+  file:
+    path: "{{ remote_backup_path }}"
+    state: directory
+  
+- name: Keep only one backup per day
+  file:
+    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    state: absent
+
+- name: "Backup volume {{ docker_volume }}"
+  docker_container:
+    name: backup_qdpaas
+    image: alpine
+    volumes:
+      - "{{ docker_volume }}:/volume:ro"
+      - "{{ remote_backup_path }}:/backup"
+    entrypoint: "{{ backup_command }}"
+
+- name: Wait for the backup to start
+  file:
+    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    state: file
+  register: result
+  until: result.state == 'file'
+
+- name: Wait 30 minutes for the backup to complete
+  docker_container_info:
+    name: backup_qdpaas
+  register: result
+  retries: 600
+  until: result.container.State.Status == 'exited'
+  
+# MemoryError because of become
+- name: Download backup file
+  fetch:
+    src: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    dest: "{{ local_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    flat: yes

@@ -1,0 +1,26 @@
+version: "3"
+
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "{{ ip_VPN }}:53:53/tcp"
+      - "{{ ip_VPN }}:53:53/udp"
+#      - "{{ ip_VPN }}:67:67/udp"
+      - "{{ ip_VPN }}:8080:80/tcp"
+      - "{{ ip_VPN }}:8443:443/tcp"
+    environment:
+      TZ: 'Europe/Madrid'
+      WEBPASSWORD: '{{ pihole_pass }}'
+    # Volumes store your data between container upgrades
+    volumes:
+      - './etc-pihole/:/etc/pihole/'
+      - './etc-dnsmasq.d/:/etc/dnsmasq.d/'
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # not needed because we're not using pihole's dhcp server
+    #cap_add:
+    #  - NET_ADMIN
+    restart: unless-stopped

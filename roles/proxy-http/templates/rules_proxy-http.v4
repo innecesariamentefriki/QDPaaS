@@ -1,0 +1,2 @@
+# proxy-http
+-A TCP -i {{ dev_VPN }} -p tcp -m tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT

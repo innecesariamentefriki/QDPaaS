@@ -1,0 +1,10 @@
+---
+
+#docker_volume:      "prometheus_data"
+#docker_date:        "2020-03-14"
+docker_date:        "{{ ansible_date_time.date }}"
+
+backup_command:     "sh -c 'tar -zcvf /backup/{{ docker_volume }}-`date +%Y-%m-%d`.tgz -C /volume ./'"
+restore_command:    "sh -c 'rm -rf /volume/* /volume/..?* /volume/.[!.]* ; tar -C /volume/ -zxvf /backup/{{ docker_volume }}-{{ docker_date }}.tgz'"
+local_backup_path:  "backup/volumes"
+remote_backup_path: "/backup/volumes"

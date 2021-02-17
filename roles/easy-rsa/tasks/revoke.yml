@@ -1,0 +1,5 @@
+---
+- name: easy-rsa  |  Revoke client
+  shell: "./easyrsa revoke {{ vpn_revoke_client }} 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"

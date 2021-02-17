@@ -1,0 +1,27 @@
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    {{ dev_WAN }}:
+      dhcp4: no
+      dhcp6: no
+      addresses: [{{ ip_WAN }}/24, ]
+      gateway4:  {{ gw_WAN }}
+      nameservers:
+              addresses: [{{ dns1 }}, {{ dns2 }}]
+    {{ dev_LAN }}:
+      dhcp4: no
+      dhcp6: no
+#  wifis:
+#    {{ dev_WLAN }}:
+#      dhcp4: no
+#      dhcp6: no
+  bridges:
+    {{ dev_BRIDGE }}:
+      dhcp4: no
+      dhcp6: no
+      addresses: [{{ ip_BRIDGE }}/24, ]
+      interfaces:
+        - {{ dev_LAN }}
+##        - {{ dev_WLAN }}

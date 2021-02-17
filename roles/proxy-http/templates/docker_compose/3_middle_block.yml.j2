@@ -1,0 +1,11 @@
+
+services: 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "{{ ip_VPN }}:80:80"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      #- ./htpasswd:/etc/nginx/htpasswd
+    networks:
+      - proxy

@@ -1,0 +1,11 @@
+# you can't use this variable here or it will break docker-compose
+# if you don't use it, rules defined here will be overwritten later
+#service_name: node_exporter
+
+net_in: [
+  '# node_exporter',
+  '-A TCP -i {{ dev_VPN }} -m tcp -m tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_out: []
+net_forward: []
+net_nat: []

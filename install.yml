@@ -1,0 +1,32 @@
+---
+- name: Common tasks
+  hosts: all
+  become: true
+  roles:
+    - basic
+    - docker
+
+- name: VPN setup
+  hosts: all
+  become: true
+  roles:
+    - easy-rsa
+    - vpn-server
+    - pihole
+
+- name: router setup
+  hosts: all
+  become: true
+  roles:
+    - router
+    - keepalived
+
+- name: Services running on the VPN
+  hosts: all
+  become: true
+  roles:
+    - monitoring
+    - node_exporter
+    - nextcloud
+    - emby
+    - transmission

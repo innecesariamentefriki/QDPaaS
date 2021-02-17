@@ -1,0 +1,28 @@
+- name: OS  |  Installing basic software
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - net-tools
+    - dnsutils
+    - cbm
+    - iotop
+    - strace
+    - rsync
+    - tcpdump
+    - smartmontools
+    - lm-sensors
+    - unattended-upgrades
+    - unrar-free
+    #- p7zip
+    #- p7zip-full
+  tags: install
+
+- name: OS  |  Make grub faster
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_TIMEOUT=10'
+    line: GRUB_TIMEOUT=1
+  notify: update-grub
+  tags: install

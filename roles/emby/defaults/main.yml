@@ -1,0 +1,21 @@
+service_name: emby
+net_name: media
+
+net_in: []
+net_out: [
+  '# {{ service_name }}',
+  '-A OUTPUT -o br-{{ eth_hash }} -p tcp -m tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_forward: [
+  '# {{ service_name }}',
+  '# Emby querying internet',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_WAN }} -p udp -m udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_WAN }} -p tcp -m multiport --dports 80,443,8080 -m conntrack --ctstate NEW -j ACCEPT',
+  '# Vagrant needs network traffic',
+  '-A FORWARD -i br-{{ eth_hash }} -o br-{{ eth_hash }} -j ACCEPT'
+]
+net_nat: []
+
+services:
+  - name: "emby.{{ name_VPN }}.vpn"
+    destination: emby:8096

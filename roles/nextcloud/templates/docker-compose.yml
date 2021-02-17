@@ -1,0 +1,56 @@
+version: '3'
+
+networks:
+  {{ net_name }}:
+    driver: bridge
+
+volumes:
+  nextcloud:
+  apps:
+  config:
+  data:
+  db:
+
+services:
+  db:
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    restart: always
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - "MYSQL_ROOT_PASSWORD={{ nextcloud_MYSQL_ROOT_PASSWORD }}"
+    env_file:
+      - db.env
+    networks:
+      - {{ net_name }}
+
+  app:
+    image: nextcloud
+    expose:
+      - 80
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html
+      - apps:/var/www/html/custom_apps
+      - config:/var/www/html/config
+      - data:/var/www/html/data
+      - /docker-share:/docker-share
+    environment:
+      - MYSQL_HOST=db
+    env_file:
+      - db.env
+    depends_on:
+      - db
+    networks:
+      - {{ net_name }}
+
+  office:
+    image: collabora/code
+    expose:
+      - 9980
+    restart: always
+    environment:
+      - extra_params=--o:ssl.enable=false
+    networks:
+      - {{ net_name }}

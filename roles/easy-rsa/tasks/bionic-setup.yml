@@ -1,0 +1,72 @@
+---
+- name: easy-rsa  |  Copy openssl config
+  template:
+    src: vars-bionic.j2
+    dest: "{{ easy_rsa_dir }}/vars"
+    owner: root
+    group: root
+    mode: 0600 
+
+- name: easy-rsa  |  Clean everything
+  command: bash -c ". ./vars && ./clean-all 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/keys/ca.crt"
+
+
+- name: easy-rsa  |  Select openssl.cnf
+  file:
+    src: /usr/share/easy-rsa/openssl-1.0.0.cnf
+    dest: /usr/share/easy-rsa/openssl.cnf
+    owner: root
+    group: root
+    state: link
+
+- name: easy-rsa  |  Create CA
+  command: bash -c ". ./vars && ./build-ca --batch 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/keys/ca.crt"
+
+- name: easy-rsa  |  Create server certificate
+  command: bash -c ". ./vars && sh ./build-key-server --batch {{ name_VPN }} 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/keys/{{ name_VPN }}.crt"
+
+- name: easy-rsa  |  Create Diffie-Hellman key
+  command: bash -c ". ./vars && sh ./build-dh 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/keys/dh2048.pem"
+
+
+
+- name: easy-rsa  |  Create client certificate
+  command: bash -c ". ./vars && sh ./build-key --batch {{ item }} 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/keys/{{ item }}.crt"
+  with_items: "{{ vpn_clients }}"
+
+
+#- name: easy-rsa  |  Revoke client
+#  command: bash -c "./easyrsa revoke {{ vpn_revoke_client }} 2> /dev/null"
+#  args:
+#    chdir: "{{ easy_rsa_dir }}"
+#  tags: [ 'never', 'revoke' ]
+#
+#- name: easy-rsa  |  Create dummy certificate
+#  command: bash -c ". ./vars && sh ./build-key --batch dummy 2> /dev/null"
+#  args:
+#    chdir: "{{ easy_rsa_dir }}"
+#    creates: "{{ easy_rsa_dir }}/keys/dummy.crt"
+#  tags: [ 'easy-rsa', 'revoke' ]
+#
+#- name: easy-rsa  |  Create CRL key
+#  command: bash -c ". ./vars && sh ./revoke-full dummy 2> /dev/null"
+#  args:
+#    chdir: "{{ easy_rsa_dir }}"
+#    #creates: "{{ easy_rsa_dir }}/pki/gen.crl"
+#  tags: [ 'easy-rsa', 'revoke' ]
+#  ignore_errors: yes

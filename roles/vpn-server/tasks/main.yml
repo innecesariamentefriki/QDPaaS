@@ -1,0 +1,61 @@
+---
+
+- name: OS  |  Installing software
+  apt: pkg=openvpn state=present
+  tags: install
+
+- name: Configure openvpn with generated certificates
+  block:
+  
+  - include: bionic-setup.yml
+    when: ansible_distribution == "Ubuntu" and ansible_distribution_release == 'bionic'
+    tags: install
+
+  - include: focal-setup.yml
+    when: (ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal') or
+          (ansible_distribution == 'Debian')
+    tags: install
+
+  - name: vpn  |  Create clients config dir
+    file:
+      path: /etc/openvpn/server/client-config
+      state: directory
+      mode: '0500'
+    tags: install
+
+  - name: vpn  |  Configuring openvpn server
+    template: src=vpn-server.conf.j2 dest=/etc/openvpn/{{ name_VPN }}.conf owner=root group=root mode=0400
+    #notify:
+    #- restart "openvpn@{{ name_VPN }}"
+    tags: install
+
+  when: not restore_backup
+
+- name: Restore openvpn configuration from backup
+  unarchive:
+    src: backup/vpn-server/vpn-server.tar.gz
+    dest: /etc/openvpn
+  when: restore_backup
+  tags: install
+
+
+- name: vpn  |  Ensure OpenVPN is started
+  service:
+    name: "openvpn@{{ name_VPN }}"
+    state: restarted
+    enabled: true
+    daemon_reload: yes
+  tags: install
+
+- name: iptables  |  Enabling ip forwarding
+  lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '^#net.ipv4.ip_forward=1'
+    line: net.ipv4.ip_forward=1
+  tags: install
+
+
+- name: iptables  |  Apply iptables rules
+  include_role:
+    name: firewall
+  tags: install

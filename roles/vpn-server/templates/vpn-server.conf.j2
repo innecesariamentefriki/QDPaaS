@@ -1,0 +1,45 @@
+mode server
+tls-server
+
+# https://community.openvpn.net/openvpn/ticket/442
+multihome
+
+port {{ VPN_port }}
+proto udp
+dev tun
+topology "subnet"
+push "topology subnet"
+ifconfig {{ ip_VPN }} {{ mask_VPN }}
+push "route-gateway {{ ip_VPN }}"
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS {{ ip_VPN }}"
+ifconfig-pool {{ ip_VPN_min }} {{ ip_VPN_max }} {{ mask_VPN }}
+
+ca '/etc/openvpn/server/ca.crt'
+cert '/etc/openvpn/server/{{ name_VPN }}.crt'
+key '/etc/openvpn/server/{{ name_VPN }}.key'
+dh '/etc/openvpn/server/dh2048.pem'
+tls-auth '/etc/openvpn/server/ta.key' 0
+#crl-verify /etc/openvpn/server/crl.pem
+cipher AES-256-CBC
+
+# hardening: run as nobody in chroot jail etc. 
+# (directory /etc/openvpn/jail must exist)
+persist-key
+persist-tun
+#user nobody
+#group nogroup
+#chroot jail
+
+client-config-dir /etc/openvpn/server/client-config/
+script-security 2
+
+verb 4
+status '/var/log/openvpn-status.log'
+log-append '/var/log/openvpn.log'
+#keepalive 20 60
+
+# speed
+tun-mtu 24000
+fragment 0
+mssfix 0

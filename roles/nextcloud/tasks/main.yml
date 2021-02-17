@@ -1,0 +1,68 @@
+---
+- name: nextcloud  |  Create destiny
+  file:
+    path: /opt/nextcloud
+    state: directory
+    mode: '0750'
+  tags: install
+
+- name: nextcloud  |  Copy docker-compose and vars
+  template: 
+    src: "{{ item }}"
+    dest: /opt/nextcloud/
+    owner: root
+    group: root
+    mode: 0600
+  with_items:
+    - docker-compose.yml
+    - db.env
+  tags: install
+  register: newdocker
+
+- name: nextcloud  |  Tear down existing services
+  docker_compose:
+    project_src: /opt/nextcloud
+    #remove_images: yes
+    remove_volumes: yes
+    state: absent
+  tags: uninstall, never
+    
+- name: nextcloud  |  Create and start services
+  docker_compose:
+    project_src: /opt/nextcloud
+  when: newdocker.changed
+  tags: install
+
+- name: nextcloud  |  Copy proxy config
+  include_role:
+    name: proxy-http
+  vars:
+    network_name: "{{ net_name }}"
+    virtualhosts: "{{ services }}"
+  tags: install
+
+- name: nextcloud  |  Get docker network name 1/2
+  community.general.docker_network_info:
+    name: "{{ service_name }}_{{ net_name }}"
+  register: docker_net
+  tags: install
+
+- name: nextcloud  |  Get docker network name 2/2
+  set_fact:
+    eth_hash: "{{ docker_net.network.Id[:12] }}"
+  tags: install
+
+- name: nextcloud  |  Apply iptables rules
+  include_role:
+    name: firewall
+  tags: install
+
+- name: nextcloud  |  Add DNS to Pi-hole
+  lineinfile:
+    path: /opt/pihole/etc-pihole/custom.list
+    state: present
+    regexp: '^{{ ip_VPN }} {{ item }}.{{ name_VPN }}.vpn'
+    line: '{{ ip_VPN }} {{ item }}.{{ name_VPN }}.vpn'
+  loop:
+    - nube
+  tags: install

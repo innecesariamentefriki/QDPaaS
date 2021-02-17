@@ -1,0 +1,35 @@
+service_name: monitoring
+net_name: monitor
+
+net_in: [
+  '# {{ service_name }}',
+  '# prometheus querying host',
+  '-A TCP -i br-{{ eth_hash }} -p tcp -m tcp --dport 9100 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_out: [
+  '# {{ service_name }}',
+  '-A OUTPUT -o br-{{ eth_hash }} -p tcp -m tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT'
+]
+net_forward: [
+  '# {{ service_name }}',
+  '# speedtest querying internet',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_WAN }} -p udp -m udp --dport 53 -m conntrack --ctstate NEW  -j ACCEPT',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_WAN }} -p tcp -m multiport --dports 80,443,8080 -m conntrack --ctstate NEW  -j ACCEPT',
+  '# alermanager sends emails',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_WAN }} -p tcp -m tcp --dport 587 -m conntrack --ctstate NEW  -j ACCEPT',
+  '# querying windows lan hosts',
+  '-A FORWARD -i br-{{ eth_hash }} -o {{ dev_BRIDGE }} -p tcp -m tcp --dport 9182 -m conntrack --ctstate NEW -j ACCEPT',
+  '# Vagrant needs network traffic',
+  '-A FORWARD -i br-{{ eth_hash }} -o br-{{ eth_hash }} -j ACCEPT'
+]
+net_nat: []
+
+services:
+  - name: "prometheus.{{ name_VPN }}.vpn"
+    destination: prometheus:9090
+  - name: "alertmanager.{{ name_VPN }}.vpn"
+    destination: alertmanager:9093
+  - name: "grafana.{{ name_VPN }}.vpn"
+    destination: grafana:3000
+  - name: "cadvisor.{{ name_VPN }}.vpn"
+    destination: cadvisor:8080

@@ -1,0 +1,5 @@
+
+-A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# Allow all lan
+-A FORWARD -i br0 -j ACCEPT

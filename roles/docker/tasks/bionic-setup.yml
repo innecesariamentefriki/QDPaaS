@@ -1,0 +1,52 @@
+---
+- name: docker  |  Install prerequisites 1/2
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+    state: present
+
+- name: docker  |  Install prerequisites 2/2
+  apt:
+    name:
+      - gnupg2
+    state: present
+  when: (ansible_distribution == 'Debian')
+
+- name: docker  |  Install prerequisites 2/2
+  apt:
+    name:
+      - gnupg-agent
+    state: present
+  when: (ansible_distribution == 'Ubuntu')
+  
+- name: docker  |  Add apt signing key
+  apt_key:
+    url: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
+    state: present
+  
+- name: docker  |  Add apt repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+    state: present
+  when: (ansible_distribution_release != 'eoan')
+  
+- name: docker  |  Add apt repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} bionic stable
+    state: present
+  when: (ansible_distribution_release == 'eoan')
+  
+- name: docker  |  Install docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose
+      - python-docker
+    state: present
+    update_cache: yes

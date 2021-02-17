@@ -1,0 +1,29 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+#source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto {{ dev_WAN }}
+iface {{ dev_WAN }} inet static
+	address {{ ip_WAN }}
+	netmask {{ mask_WAN }}
+	network {{ net_WAN }}
+	gateway	{{ gw_WAN }}
+
+#allow-hotplug {{ dev_WLAN }}
+#iface {{ dev_WLAN }} inet manual
+#	post-up /usr/sbin/hostapd -B /etc/hostapd/hostapd.conf -P /run/hostapd.pid
+##	pre-down kill -9 `cat /run/hostapd.pid`
+	
+auto {{ dev_BRIDGE }}
+iface {{ dev_BRIDGE }} inet static
+	bridge_ports {{ dev_LAN }}
+	address {{ ip_BRIDGE }}
+	netmask {{ mask_BRIDGE }}
+	network {{ net_BRIDGE }}
+#	post-up ifup {{ dev_WLAN }}
+#	pre-down ifdown {{ dev_WLAN }}

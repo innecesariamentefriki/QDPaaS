@@ -1,0 +1,24 @@
+---
+- name: keepalived  |  Installing haproxy and keepalived
+  apt:
+    pkg: ['haproxy', 'keepalived']
+    state: present
+  tags: install
+
+- name: keepalived  |  Enable load balancing
+  template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+  notify:
+    - disable haproxy
+    - restart-keepalived
+  tags: install
+
+- name: keepalived  |  Configuring keepalived
+  template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  notify:
+    - restart-keepalived
+  tags: install
+
+- name: monitoring  |  Apply iptables rules
+  include_role:
+    name: firewall
+  tags: install

@@ -1,0 +1,5 @@
+# end input
+-A INPUT -j LOG --log-prefix "blocked input: "
+-A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+-A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -j REJECT --reject-with icmp-proto-unreachable

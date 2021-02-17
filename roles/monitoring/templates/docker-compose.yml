@@ -1,0 +1,84 @@
+version: '2.1'
+
+networks:
+  {{ net_name }}:
+    driver: bridge
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+    alertmanager_data: {}
+
+services:
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090
+    networks:
+      - {{ net_name }}
+
+  alertmanager:
+    image: prom/alertmanager
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      #- '--storage.path=/alertmanager'
+    restart: unless-stopped
+    expose:
+      - 9093
+    networks:
+      - {{ net_name }}
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning/dashboards/ansible.yaml:/etc/grafana/provisioning/dashboards/ansible.yaml
+      - ./grafana/provisioning/datasources/prometheus.yaml:/etc/grafana/provisioning/datasources/prometheus.yaml
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    expose:
+      - 3000
+    networks:
+      - {{ net_name }}
+
+  cadvisor:
+    image: google/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      #- /var/run:/var/run:rw
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    restart: unless-stopped
+    expose:
+      - 8080
+    networks:
+      - {{ net_name }}
+
+  speedtest:
+    image: jraviles/prometheus_speedtest
+    expose:
+      - 9516
+    restart: unless-stopped
+    networks:
+      - {{ net_name }}

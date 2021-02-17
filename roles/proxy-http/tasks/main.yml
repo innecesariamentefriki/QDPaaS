@@ -1,0 +1,103 @@
+---
+- name: proxy-http  |  Create destiny
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0750'
+  with_items:
+    - /opt/proxy-http
+    - /opt/proxy-http/conf.d
+    - /opt/proxy-http/fragments
+  tags: install
+
+- name: proxy-http  |  Copy docker-compose main fragments
+  template: 
+    src: docker_compose/{{ item }}_block.yml.j2
+    dest: /opt/proxy-http/fragments/{{ item }}_block.yml
+    owner: root
+    group: root
+    mode: 0600 
+  with_items:
+    - 1_head
+    - 3_middle
+    - 5_end
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Copy docker-compose service fragments 1/2
+  template: 
+    src: docker_compose/2_network_block.yml.j2
+    dest: /opt/proxy-http/fragments/2_{{ service_name }}.yml
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Copy docker-compose service fragments 2/2
+  template: 
+    src: docker_compose/4_service_block.yml.j2
+    dest: /opt/proxy-http/fragments/4_{{ service_name }}.yml
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Assemble docker-compose
+  assemble:
+    src: /opt/proxy-http/fragments
+    dest: /opt/proxy-http/docker-compose.yml
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Copy default config
+  copy: 
+    src: default.conf
+    dest: /opt/proxy-http/conf.d/
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Create virtualhosts
+  template: 
+    src: virtualhost.conf.j2
+    dest: /opt/proxy-http/conf.d/{{ service_name }}.conf
+    owner: root
+    group: root
+    mode: 0604
+  tags: install
+  register: newdocker
+
+- name: proxy-http  |  Tear down existing services
+  docker_compose:
+    project_src: /opt/proxy-http
+    #remove_images: yes
+    remove_volumes: yes
+    state: absent
+  tags: uninstall, never
+    
+- name: proxy-http  |  Create and start services
+  docker_compose:
+    project_src: /opt/proxy-http
+  #when: newdocker.changed
+  tags: install
+
+#- name: proxy-http  |  Apply iptables rules
+#  include_role:
+#    name: firewall
+#  tags: install
+
+- name: proxy-http  |  Copy iptables service fragments
+  template: 
+    src: rules_proxy-http.v4
+    dest: /root/iptables-fragments/03_proxy-http
+    owner: root
+    group: root
+    mode: 0600 
+  tags: install

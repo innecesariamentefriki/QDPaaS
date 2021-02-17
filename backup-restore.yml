@@ -1,0 +1,14 @@
+---
+- name: Backup/restore docker volumes
+  hosts: all
+  become: true
+  #gather_facts: False
+#  roles:
+#    - backup-restore
+  tasks:
+  - name: Use role for each volume
+    include_role:
+      name: backup-restore
+    with_items: "{{ backup_volumes }}"
+    vars:
+      docker_volume: "{{ item }}"

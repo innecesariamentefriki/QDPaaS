@@ -1,0 +1,28 @@
+version: '3'
+
+networks:
+  {{ net_name }}:
+    driver: bridge
+
+volumes:
+  config:
+
+services:
+  emby:
+    image: emby/embyserver:latest
+    expose:
+      - 8096
+      - 8920
+    restart: always
+    volumes:
+      - config:/config # This is mandatory
+      - /docker-share:/docker-share
+    environment:
+      - UID=33 # The UID to run emby as (default: 2)
+      - GID=33 # The GID to run emby as (default 2)
+      #- GIDLIST=100 # A comma-separated list of additional GIDs to run emby as (default: 2)
+    devices:
+      - "/dev/dri:/dev/dri" # To mount all render nodes for VAAPI/NVDEC/NVENC
+    networks:
+      - {{ net_name }}
+          

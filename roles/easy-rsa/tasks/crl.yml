@@ -1,0 +1,7 @@
+---
+
+- name: easy-rsa  |  Create CRL key
+  shell: "./easyrsa gen-crl 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    #creates: "{{ easy_rsa_dir }}/pki/gen.crl"

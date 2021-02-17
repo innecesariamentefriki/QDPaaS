@@ -1,0 +1,14 @@
+#option domain-name-servers {{ dns1 }}, {{ dns2 }};
+option domain-name-servers {{ dns1 }};
+#option domain-name "example.org";
+
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style none;
+
+subnet {{ net_BRIDGE }} netmask {{ mask_BRIDGE }} {
+	interface {{ dev_BRIDGE }};
+	range {{ ip_dhcp_first }} {{ ip_dhcp_last }};
+	option routers {{ ip_BRIDGE }};
+}

@@ -1,0 +1,79 @@
+---
+- block:
+    - name: router  |  Network configuration
+      template:
+        src: 01-network-manager-all.yaml.j2
+        dest: /etc/netplan/01-network-manager-all.yaml
+      tags: install
+
+    - name: router  |  Apply netplan
+      command: sudo netplan apply
+      tags: install
+
+  when: (ansible_distribution == 'Ubuntu')
+
+- name: router  |  Network configuration
+  template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+  tags: install
+  when: (ansible_distribution == 'Debian')
+
+- name: router  |  Installing bridge utils
+  apt:
+    pkg: bridge-utils
+    state: present
+  tags: install
+
+- name: router  |  Bring bridge interface up
+  systemd:
+    state: restarted
+    name: networking
+  tags: install
+  when: (ansible_distribution == 'Debian')
+  
+- name: router  |  Bring bridge interface up
+  systemd:
+    state: restarted
+    name: NetworkManager
+  tags: install
+  when: (ansible_distribution == 'Ubuntu')
+
+# already applied in openvpn
+#- name: firewall  |  Enabling ip forwarding
+#  lineinfile:
+#    path: /etc/sysctl.conf
+#    regexp: '^#net.ipv4.ip_forward=1'
+#    line: net.ipv4.ip_forward=1
+#  tags: install
+
+- name: router  |  Installing dhcp daemon
+  apt:
+    pkg: isc-dhcp-server
+    state: present
+  tags: install
+
+- name: router  |  Copy dhcp config
+  template:
+    src: dhcpd.conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+  tags: install
+
+- name: router  |  Configure listen interface for dhcp server
+  lineinfile:
+    path: /etc/default/isc-dhcp-server
+    regexp: '^INTERFACESv4=""'
+    line: INTERFACESv4="{{ net_BRIDGE }}"
+  tags: install
+
+- name: router  |  Restart dhcp
+  service:
+    name: isc-dhcp-server
+    state: restarted
+    daemon_reload: yes
+  tags: install
+
+- name: router  |  Apply iptables rules
+  include_role:
+    name: firewall
+  tags: install

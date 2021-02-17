@@ -1,0 +1,13 @@
+EASYRSA_REQ_COUNTRY:            "ES"
+EASYRSA_REQ_PROVINCE:           "Madrid"
+EASYRSA_REQ_CITY:               "Madrid"
+EASYRSA_REQ_ORG:                "Evil Empire"
+EASYRSA_REQ_EMAIL:              "{{ GMAIL_USER }}"
+EASYRSA_REQ_OU:                 "IT"
+EASYRSA_NS_COMMENT:             "wtf_ns_comment_como_req_org"
+
+easy_rsa_dir:                   "/usr/share/easy-rsa"
+name_VPN:                       "QDPaaS"
+
+easy_rsa_server_name:           "QDPaaS"
+vpn_clients:                    [ 'laptop', 'android']

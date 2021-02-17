@@ -1,0 +1,14 @@
+client
+dev tun
+remote {{ ip_VPN_server }}
+port 3342
+proto udp
+redirect-gateway def1
+remote-cert-tls server
+nobind
+persist-key
+persist-tun
+keepalive 20 60
+cipher AES-256-CBC
+
+key-direction 1

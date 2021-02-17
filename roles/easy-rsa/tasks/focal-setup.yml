@@ -1,0 +1,67 @@
+---
+- name: easy-rsa  |  Copy openssl config
+  template:
+    src: vars-focal.j2
+    dest: "{{ easy_rsa_dir }}/vars"
+    owner: root
+    group: root
+    mode: 0600 
+
+- name: easy-rsa  |  Create pki
+  shell: ./easyrsa init-pki 2> /dev/null
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki"
+
+- name: easy-rsa  |  Create CA
+  shell: "./easyrsa build-ca nopass 2> /dev/null"
+  environment:
+    EASYRSA_REQ_CN: '{{ EASYRSA_REQ_OU }}'
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/ca.crt"
+
+
+
+- name: easy-rsa  |  Create server private key
+  shell: "./easyrsa gen-req {{ name_VPN }} nopass 2> /dev/null"
+  environment:
+    EASYRSA_REQ_CN: '{{ easy_rsa_server_name }}'
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/private/{{ name_VPN }}.key"
+
+- name: easy-rsa  |  Create server certificate
+  shell: "./easyrsa sign-req server {{ name_VPN }} 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/issued/{{ name_VPN }}.crt"
+
+- name: easy-rsa  |  Create Diffie-Hellman key
+  shell: "./easyrsa gen-dh 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/dh.pem"
+
+
+
+- name: easy-rsa  |  Create client private key
+  shell: "./easyrsa gen-req {{ item }} nopass 2> /dev/null"
+  environment:
+    EASYRSA_REQ_CN: '{{ item }}'
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/private/{{ item }}.key"
+  with_items: "{{ vpn_clients }}"
+
+- name: easy-rsa  |  Create client certificate
+  shell: "./easyrsa sign-req client {{ item }} 2> /dev/null"
+  args:
+    chdir: "{{ easy_rsa_dir }}"
+    creates: "{{ easy_rsa_dir }}/pki/issued/{{ item }}.crt"
+  with_items: "{{ vpn_clients }}"
+
+
+
+
+

@@ -1,0 +1,8 @@
+---
+- name: docker  |  Install docker on ubuntu focal
+  apt:
+    name:
+      - docker.io
+      - docker-compose
+    state: present
+    

@@ -1,0 +1,25 @@
+---
+- name: easy-rsa  |  Copy configuration builder
+  template:
+    src: "{{ item }}.j2"
+    dest: "/tmp/{{ item }}"
+    owner: root
+    group: root
+    mode: 0600 
+  with_items:
+    - ovpn-builder.sh
+    - PC.cfg
+    - SMARTPHONE.cfg
+
+- name: easy_rsa  |  Create certificate
+  shell: "bash ovpn-builder.sh {{ item }}"
+  args:
+    chdir: /tmp/
+    creates:
+      - "/tmp/{{ item }}-PC.ovpn"
+  with_items: "{{ vpn_clients }}"
+
+- name: easy_rsa  |  Display OpenVPN config
+  include_tasks: show.yml
+  with_items: "{{ vpn_clients }}"
+
