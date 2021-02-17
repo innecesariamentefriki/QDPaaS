@@ -5,7 +5,7 @@ Quick & Dirty Platform as a Service: your own cloud and content delivery network
 
 # Requirements
 
-QDPaaS can be run on your current Debian based computer, but it can also run inside its own VM on Windows/Mac systems.
+QDPaaS can be run on your current Debian based system, but it can also run inside its own VM on Windows/Mac computers.
 
 ## Virtual machine
 
@@ -64,7 +64,7 @@ $ vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/
 If you're on windows the output will be messed up, so you have to run two separate commands:
 
 ```shell
-C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install-vagrant.yml --tags build_ovpn --limit corcho -e "vpn_clients=htpc"'
+C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags build_ovpn --limit corcho -e "vpn_clients=htpc"'
 C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- 'cat /tmp/htpc.ovpn'
 ```
 
@@ -174,7 +174,7 @@ For making a backup of *emby_config* put inside a file _Dockerfile_ on QDPaaS ma
 
 ```shell
 FROM alpine
-ENTRYPOINT tar -zcf /backup/test-`date +%Y-%m-%d`.tgz -C /volume ./
+ENTRYPOINT tar -zcf /backup/emby_config-`date +%Y-%m-%d`.tgz -C /volume ./
 ```
 
 Build the container which performs the backup and restore procedures:
