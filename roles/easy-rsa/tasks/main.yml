@@ -1,19 +1,16 @@
 ---
 - name: easy-rsa  |  Installing easy-rsa software
   apt: pkg=easy-rsa state=present
-  tags: install
 
 - include: bionic-setup.yml
   when: ansible_distribution == "Ubuntu" and ansible_distribution_release == 'bionic'
-  tags: install
 
 - include: focal-setup.yml
   when: (ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal') or
+        (ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'hirsute') or
         (ansible_distribution == 'Debian')
-  tags: install
 
 - include: crl.yml
-  tags: install
 
 - include: build.yml
   tags: [ never, build_ovpn ]

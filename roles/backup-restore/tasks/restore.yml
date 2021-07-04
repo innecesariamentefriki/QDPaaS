@@ -6,7 +6,7 @@
   
 - name: "Upload backup file {{ docker_volume }}"
   copy:
-    src: "{{ local_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    src: "{{ local_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tar"
     dest: "{{ remote_backup_path }}"
 
 - name: Create volume

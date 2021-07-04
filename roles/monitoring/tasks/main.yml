@@ -5,7 +5,6 @@
     path: /opt/monitoring
     state: directory
     mode: '0750'
-  tags: install
 
 - name: monitoring  |  Alertmanager config
   template: 
@@ -14,7 +13,6 @@
     owner: root
     group: root
     mode: 0644
-  tags: install
 
 - name: monitoring  |  Create grafana dir
   file:
@@ -25,7 +23,6 @@
   - dashboards
   - provisioning/dashboards
   - provisioning/datasources
-  tags: install
 
 - name: monitoring  |  Grafana dashboards
   copy: 
@@ -38,7 +35,6 @@
     - docker.json
     - node-exporter-full_rev15.json
     - speedtest-dashboard_rev1.json
-  tags: install
 
 - name: monitoring  |  Grafana provisioning dashboards
   copy: 
@@ -47,7 +43,6 @@
     owner: root
     group: root
     mode: 0640
-  tags: install
 
 - name: monitoring  |  Grafana provisioning datasources
   copy: 
@@ -56,14 +51,12 @@
     owner: root
     group: root
     mode: 0640
-  tags: install
 
 - name: monitoring  |  Create prometheus dir
   file:
     path: /opt/monitoring/prometheus
     state: directory
     mode: '0705'
-  tags: install
 
 - name: monitoring  |  Prometheus config
   template: 
@@ -72,7 +65,6 @@
     owner: root
     group: root
     mode: 0604
-  tags: install
 
 - name: monitoring  |  Prometheus alerts
   copy: 
@@ -81,7 +73,6 @@
     owner: root
     group: root
     mode: 0604
-  tags: install
 
 - name: monitoring  |  Copy docker-compose
   template: 
@@ -91,7 +82,6 @@
     group: root
     mode: 0600
   register: newdocker
-  tags: install
 
 - name: monitoring  |  Tear down existing services
   docker_compose:
@@ -105,7 +95,6 @@
   docker_compose:
     project_src: /opt/monitoring
   when: newdocker.changed
-  tags: install
 
 - name: monitoring  |  Copy proxy config
   include_role:
@@ -113,23 +102,19 @@
   vars:
     network_name: "{{ net_name }}"
     virtualhosts: "{{ services }}"
-  tags: install
 
 - name: monitoring  |  Get docker network name 1/2
   community.general.docker_network_info:
     name: "{{ service_name }}_{{ net_name }}"
   register: docker_net
-  tags: install
 
 - name: monitoring  |  Get docker network name 2/2
   set_fact:
     eth_hash: "{{ docker_net.network.Id[:12] }}"
-  tags: install
 
 - name: monitoring  |  Apply iptables rules
   include_role:
     name: firewall
-  tags: install
 
 - name: monitoring  |  Add DNS to Pi-hole
   lineinfile:
@@ -142,4 +127,3 @@
     - cadvisor
     - grafana
     - prometheus
-  tags: install

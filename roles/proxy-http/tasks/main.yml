@@ -8,7 +8,6 @@
     - /opt/proxy-http
     - /opt/proxy-http/conf.d
     - /opt/proxy-http/fragments
-  tags: install
 
 - name: proxy-http  |  Copy docker-compose main fragments
   template: 
@@ -21,7 +20,6 @@
     - 1_head
     - 3_middle
     - 5_end
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Copy docker-compose service fragments 1/2
@@ -31,7 +29,6 @@
     owner: root
     group: root
     mode: 0600 
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Copy docker-compose service fragments 2/2
@@ -41,7 +38,6 @@
     owner: root
     group: root
     mode: 0600 
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Assemble docker-compose
@@ -51,7 +47,6 @@
     owner: root
     group: root
     mode: 0600 
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Copy default config
@@ -61,7 +56,6 @@
     owner: root
     group: root
     mode: 0600 
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Create virtualhosts
@@ -71,7 +65,6 @@
     owner: root
     group: root
     mode: 0604
-  tags: install
   register: newdocker
 
 - name: proxy-http  |  Tear down existing services
@@ -86,13 +79,11 @@
   docker_compose:
     project_src: /opt/proxy-http
   #when: newdocker.changed
-  tags: install
 
 #- name: proxy-http  |  Apply iptables rules
 #  include_role:
 #    name: firewall
-#  tags: install
-
+#
 - name: proxy-http  |  Copy iptables service fragments
   template: 
     src: rules_proxy-http.v4
@@ -100,4 +91,3 @@
     owner: root
     group: root
     mode: 0600 
-  tags: install

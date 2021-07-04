@@ -6,7 +6,7 @@
   
 - name: Keep only one backup per day
   file:
-    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tar"
     state: absent
 
 - name: "Backup volume {{ docker_volume }}"
@@ -20,7 +20,7 @@
 
 - name: Wait for the backup to start
   file:
-    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    path: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tar"
     state: file
   register: result
   until: result.state == 'file'
@@ -35,6 +35,6 @@
 # MemoryError because of become
 - name: Download backup file
   fetch:
-    src: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
-    dest: "{{ local_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tgz"
+    src: "{{ remote_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tar"
+    dest: "{{ local_backup_path }}/{{ docker_volume }}-{{ docker_date }}.tar"
     flat: yes

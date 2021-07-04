@@ -1,22 +1,18 @@
 ---
 - name: OS  |  Installing software
   apt: pkg=iptables-persistent state=present
-  tags: install
 
 - name: firewall  |  Configuring iptables log
   copy: src=../files/60-iptables.conf dest=/etc/rsyslog.d/ owner=root group=root mode=0640
-  tags: install
 
 - name: firewall  |  Enabling log rotate
   copy: src=../files/iptables-blocked dest=/etc/logrotate.d/ owner=root group=root mode=0640
-  tags: install
 
 - name: firewall  |  Create rules directory
   file:
     path: /root/iptables-fragments
     state: directory
     mode: '0750'
-  tags: install
 
 - name: firewall  |  Copy iptables main fragments
   template: 
@@ -36,7 +32,6 @@
     - 11_footer
     - 12_nat_begin
     - 14_nat_end
-  tags: install
 
 - name: firewall  |  Copy iptables service fragments 1/4
   template: 
@@ -46,7 +41,6 @@
     group: root
     mode: 0600 
   when: net_in is defined
-  tags: install
 
 - name: firewall  |  Copy iptables service fragments 2/4
   template: 
@@ -56,7 +50,6 @@
     group: root
     mode: 0600 
   when: net_forward is defined
-  tags: install
 
 - name: firewall  |  Copy iptables service fragments 3/4
   template: 
@@ -66,7 +59,6 @@
     group: root
     mode: 0600 
   when: net_out is defined
-  tags: install
 
 - name: firewall  |  Copy iptables service fragments 4/4
   template: 
@@ -76,7 +68,6 @@
     group: root
     mode: 0600 
   when: net_nat is defined
-  tags: install
 
 - name: firewall  |  Assemble iptables-save
   assemble:
@@ -87,4 +78,3 @@
     mode: 0600 
   notify:
   - restart iptables
-  tags: install

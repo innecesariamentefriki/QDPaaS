@@ -5,21 +5,18 @@
     url: https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz
     dest: /tmp
     mode: '0400'
-  tags: install
 
 - name: node_exporter  |  Unarchive
   unarchive:
     src: /tmp/node_exporter-0.18.1.linux-amd64.tar.gz
     dest: /usr/local/bin
     remote_src: yes
-  tags: install
   ignore_errors: yes
 
 - name: node_exporter  |  Add user to run the service
   user:
     name: prometheus
     comment: node_exporter
-  tags: install
 
 - name: node_exporter  |  Create service
   template: 
@@ -27,7 +24,6 @@
     dest: /etc/systemd/system
     owner: root
     group: root
-  tags: install
 
 - name: node_exporter  |  Start node_exporter
   service:
@@ -35,9 +31,7 @@
     state: started
     enabled: yes
     daemon_reload: yes
-  tags: install
 
 #- name: node_exporter  |  Apply iptables rules
 #  include_role:
 #    name: firewall
-#  tags: install

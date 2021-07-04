@@ -18,11 +18,10 @@
 - include: bionic-setup.yml
   when: (ansible_distribution == "Ubuntu" and ansible_distribution_release == 'bionic') or
         (ansible_distribution == 'Debian')
-  tags: install
 
 - include: focal-setup.yml
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'focal'
-  tags: install
+  when: (ansible_distribution == 'Ubuntu') and 
+        (ansible_distribution_release == 'focal' or ansible_distribution_release == 'hirsute')
 
 
 
@@ -33,17 +32,14 @@
     owner: www-data
     group: www-data
     mode: 0750
-  tags: install
 
 - name: docker  |  Disable autogeneration of iptables rules
   copy:
     src: daemon.json
     dest: /etc/docker/
-  tags: install
 
 - name: docker  |  Restart service in order to disable iptables autogeneration
   systemd:
     state: restarted
     name: docker
     enabled: yes
-  tags: install

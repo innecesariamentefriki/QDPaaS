@@ -56,7 +56,7 @@ In order to show the VPN config for _htpc_ client you can call ansible from outs
 Just run:
 
 ```shell
-$ vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags build_ovpn --limit corcho -e "vpn_clients=htpc"' | sed 's/\\n/\n/g'
+$ vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags build_ovpn -e "vpn_clients=htpc"' | sed 's/\\n/\n/g'
 ```
 
 ### Windows
@@ -64,7 +64,7 @@ $ vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/
 If you're on windows the output will be messed up, so you have to run two separate commands:
 
 ```shell
-C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags build_ovpn --limit corcho -e "vpn_clients=htpc"'
+C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- '.local/bin/ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags build_ovpn -e "vpn_clients=htpc"'
 C:\Users\luser\Downloads\QDPaaS-0.1.0>vagrant ssh corcho -- 'cat /tmp/htpc.ovpn'
 ```
 
@@ -130,27 +130,18 @@ In order to move QDPaaS from one machine to another, it is necessary to do a bac
 ## Backup
 
 ```shell
-vagrant@corcho:/etc/openvpn$ sudo tar zcvf /tmp/vpn-server.tar.gz QDPaaS.conf server/
-QDPaaS.conf
-server/
-server/ca.crt
-server/client-config/
-server/QDPaaS.key
-server/crl.pem
-server/QDPaaS.crt
-server/ta.key
-server/dh2048.pem
-vagrant@corcho:/etc/openvpn$ 
+vagrant@corcho:~ $ sudo tar zcvf /tmp/vpn-server.tar.gz /etc/openvpn/QDPaaS.conf /etc/openvpn/server /usr/share/easy-rsa /tmp/*ovpn
 ```
 
 Download the tar.gz file.
+
 
 ## Restore
 
 Put the tar.gz file inside _backup/vpn-server/_ and then execute:
 
 ```shell
-vagrant@corcho:~$ ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags install --limit corcho -e restore_backup=true
+vagrant@corcho:~$ ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags install -e restore_backup=true
 ```
 
 
@@ -159,13 +150,13 @@ vagrant@corcho:~$ ansible-playbook -i /vagrant/hosts /vagrant/install.yml --tags
 Remember to check there's enough free space on the host running Ansible before making a backup:
 
 ```shell
-ansible-playbook -i hosts backup-restore.yml --limit corcho
+ansible-playbook -i hosts backup-restore.yml -e action=backup
 ```
 
 When restoring a backup, today is used as default date:
 
 ```shell
-ansible-playbook -i hosts backup-restore.yml --limit corcho -e docker_date=20210214
+ansible-playbook -i hosts backup-restore.yml -e docker_date=20210214 -e action=restore
 ```
 
 ## Manual backup
@@ -174,7 +165,7 @@ For making a backup of *emby_config* put inside a file _Dockerfile_ on QDPaaS ma
 
 ```shell
 FROM alpine
-ENTRYPOINT tar -zcf /backup/emby_config-`date +%Y-%m-%d`.tgz -C /volume ./
+ENTRYPOINT tar -zcf /backup/emby_config-`date +%Y-%m-%d`.tar -C /volume ./
 ```
 
 Build the container which performs the backup and restore procedures:
@@ -189,7 +180,7 @@ Run the backup of *emby_config* volume:
 docker run --rm \
 -v emby_config:/volume:ro \
 -v /tmp:/backup \
-backup_qdpaas '/bin/tar -zcf /backup/emby_config-2021-02-14.tgz -C /volume ./'
+backup_qdpaas '/bin/tar -zcf /backup/emby_config-2021-02-14.tar -C /volume ./'
 ```
 
 /tmp on QDPaaS must have enough space to save the backup. 
@@ -200,5 +191,5 @@ In order to restore, first upload the _tgz_ file to the /tmp of the QDPaaS machi
 docker run --rm \
 -v emby_config:/volume \
 -v /tmp:/backup \
-backup_qdpaas 'rm -rf /volume/* /volume/..?* /volume/.[!.]* ; tar -C /volume/ -zxf /backup/emby_config-2021-02-14.tgz'
+backup_qdpaas 'rm -rf /volume/* /volume/..?* /volume/.[!.]* ; tar -C /volume/ -zxf /backup/emby_config-2021-02-14.tar'
 ```
